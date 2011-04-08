@@ -95,7 +95,7 @@ class Analyseur{
 				array_push($resultat,$temp);
 			}
 		}
-		print_r ($resultat);
+		//print_r ($resultat);
 		return $resultat;
 	}
 	

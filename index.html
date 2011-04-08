@@ -1,0 +1,85 @@
+<html>
+	<head>
+		<link type="text/css" href="jquery/css/pepper-grinder/jquery-ui-1.8.2.custom.css" rel="stylesheet" />
+		<script type="text/javascript" src = "ajax.js"></script>
+		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+		<script type="text/javascript" src = "jquery-1.5.2.min.js"></script>
+		<script type="text/javascript" src ="jquery/ajaxupload.js"></script>
+		<script type="text/javascript" src ="jquery/js/jquery-ui-1.8.2.custom.min.js"></script>
+		<script type="text/javascript">
+			var xmlName;
+			var configs = new Array()
+			var type;
+			var xml;
+			google.load("visualization", "1", {packages:["corechart"]});
+			function getDataTable(){
+				var dataTable = new google.visualization.DataTable();
+				
+				switch(type){
+					case 1: 
+						
+						configs = new Array();
+						$(xml).find('Configuration').children().each(function(){
+							configs.push($(this).text());
+						});
+						
+						dataTable.addColumn("string", configs[0]);
+						for (i=1; i<configs.length; i++){
+							dataTable.addColumn("number", configs[i])
+						}
+						dataRows = $(xml).find('Donnee').children('Data').length;
+						dataTable.addRows(dataRows);
+						idx = 0;
+						$(xml).find('Donnee').children('Data').each(function(){
+							dataTable.setValue(idx, 0, $(this).find("attribute[nom='"+configs[0]+"']").text());
+							for (i=1; i<configs.length; i++){
+								dataTable.setValue(idx, i, parseInt($(this).find("attribute[nom='"+configs[i]+"']").text()));
+							}
+							idx++;
+						});	
+						var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+						chart.draw(dataTable, {width: 400, height: 240, title: 'Line chart'});
+						break;
+				}
+			}
+			$(function(){
+				var a = new AjaxUpload('fileb',{
+					action: 'showG.php',
+					name: 'file',
+					data: {
+						mode : 1
+					},
+					onComplete:function(file,response){
+						xmlName = response;
+						$('#filename').html("xml File name ::"+xmlName);
+					}
+				});
+				$('#fileb').button();
+				$('#getLineChart').button();
+				$('#getLineChart').click(function(){
+					$.get("showG.php",{mode: 2, filename: xmlName, typeChart: "LineChart"}, 
+						function(data){
+							type = 1;
+							xml = data;
+							getDataTable();
+							//google.setOnLoadCallback(getDataTable);
+							
+						}
+					);
+				});
+				
+			});
+			
+			
+		</script>
+	</head>
+	<body>
+		<div><button id = 'fileb'>Parcours </button>
+			<label id = 'filename'></label>
+		</div>
+		<div> 
+			<button id = 'getLineChart'>Get Line Chart </button>
+		</div>
+		<div id="chart_div"></div>
+	</body>
+</html>
